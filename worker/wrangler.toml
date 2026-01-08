@@ -2,16 +2,11 @@ name = "my-love-r2-worker"
 main = "index.js"
 compatibility_date = "2024-01-01"
 
-# R2 Bucket Binding - thay MY_BUCKET bằng tên bucket của bạn
+# R2 Bucket Binding
 [[r2_buckets]]
-binding = "MY_BUCKET"
-bucket_name = "my-love-images"  # ⚠️ THAY ĐỔI TÊN BUCKET CỦA BẠN TẠI ĐÂY
+binding = "my-love-images"
+bucket_name = "my-love-images"
 
 # CORS configuration for frontend access
 [vars]
-ALLOWED_ORIGINS = "http://localhost:8080,https://your-domain.com"
-
-# ⚠️ SECRETS - Set via wrangler CLI, NOT here!
-# Run these commands after deploy:
-# npx wrangler secret put R2_ACCESS_KEY_ID
-# npx wrangler secret put R2_SECRET_ACCESS_KEY
+ALLOWED_ORIGINS = "http://localhost:8080,https://btlong402.github.io/my_love"
