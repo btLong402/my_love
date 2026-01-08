@@ -6,14 +6,14 @@ var imgWidth = 120; // width of images (unit: px)
 var imgHeight = 170; // height of images (unit: px)
 
 // Link of background music - set 'null' if you dont want to play background music
-var bgMusicURL = 'https://api.soundcloud.com/tracks/143041228/stream?client_id=587aa2d384f7333a886010d5f52f302a';
-var bgMusicControls = true; // Show UI music control
+var bgMusicURL = null;
+var bgMusicControls = false; // Show UI music control
 
 
 
 // ===================== start =======================
 // animation start after 1000 miliseconds
-// setTimeout(init, 1000);
+setTimeout(init, 1000);
 
 var odrag = document.getElementById('drag-container');
 var ospin = document.getElementById('spin-container');
@@ -133,9 +133,9 @@ function handleFileSelection(event) {
   const mp3Input = document.getElementById('mp3-input');
   // const startButton = document.getElementById('start-button');
   
-  imagesSelected = imageInput.files.length  === 8;
-  if (event.target.id === 'image-input' && imageInput.files.length !== 8) {
-    alert('Please select exactly 8 images.');
+  imagesSelected = imageInput.files.length > 0;
+  if (event.target.id === 'image-input' && imageInput.files.length === 0) {
+    alert('Please select at least 1 image.');
     return;
   }
   mp3Selected = mp3Input.files.length > 0;
@@ -150,18 +150,12 @@ function handleFileSelection(event) {
 }
 
 function startApplication() {
-  if(!imagesSelected) {
-    console.log('imagesSelected', imagesSelected);
-    alert('Please select exactly 8 images.');
-    return;
-  }
-  if(!mp3Selected) {
-    console.log('mp3Selected', mp3Selected);
-    alert('Please select an mp3 file.');
-    return;
-  }
+  if(imagesSelected) {
     handleImageSelection();
+  }
+  if(mp3Selected) {
     handleMp3Selection();
+  }
 }
 
 function handleImageSelection() {
@@ -494,3 +488,12 @@ function draw(){
 
 // draw();
 
+
+document.getElementById('settings-btn').addEventListener('click', function() {
+  const fileInputs = document.getElementById('file-inputs');
+  if (fileInputs.style.display === 'none' || fileInputs.style.display === '') {
+    fileInputs.style.display = 'block';
+  } else {
+    fileInputs.style.display = 'none';
+  }
+});
