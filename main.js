@@ -890,10 +890,30 @@ addPhotoInputs.forEach(input => {
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        let imgSrc;
+        let r2Key = null;
+
+        // Upload to R2 if configured
+        if (storageManager.useCloud && storageManager.workerUrl) {
+          try {
+            showToast(`Đang upload ảnh ${i + 1}/${files.length}...`);
+            const result = await storageManager.uploadToR2(file);
+            imgSrc = result.url;
+            r2Key = result.key;
+          } catch (error) {
+            console.error('R2 upload failed:', error);
+            imgSrc = URL.createObjectURL(file);
+            showToast('Upload cloud thất bại, dùng local', 'error');
+          }
+        } else {
+          imgSrc = URL.createObjectURL(file);
+        }
+
         const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
+        img.src = imgSrc;
         img.alt = `Image ${startIndex + i + 1}`;
         img.dataset.index = startIndex + i;
+        if (r2Key) img.dataset.r2key = r2Key;
         img.addEventListener('click', openImageModal);
 
         // Insert before the <p> tag
@@ -1005,3 +1025,68 @@ function initR2Config() {
     }
   }
 }
+
+// ==================== LOAD IMAGES FROM CLOUD ====================
+async function loadImagesFromCloud() {
+  // Skip if no worker URL configured
+  if (!storageManager.useCloud || !storageManager.workerUrl) {
+    console.log('Cloud not configured, using default images');
+    return false;
+  }
+
+  try {
+    const r2Images = await storageManager.listR2Images();
+
+    if (r2Images.length === 0) {
+      console.log('No images in cloud, using default');
+      return false;
+    }
+
+    const spinContainer = document.getElementById('spin-container');
+
+    // Clear default images
+    const existingImages = spinContainer.querySelectorAll('img');
+    existingImages.forEach(img => img.remove());
+
+    // Add cloud images
+    r2Images.forEach((img, index) => {
+      const imgEl = document.createElement('img');
+      imgEl.src = img.url;
+      imgEl.alt = `Cloud Image ${index + 1}`;
+      imgEl.dataset.index = index;
+      imgEl.dataset.r2key = img.key;
+      imgEl.addEventListener('click', openImageModal);
+
+      const pTag = spinContainer.querySelector('p');
+      if (pTag) {
+        spinContainer.insertBefore(imgEl, pTag);
+      } else {
+        spinContainer.appendChild(imgEl);
+      }
+    });
+
+    console.log(`Loaded ${r2Images.length} images from cloud`);
+    return true;
+  } catch (error) {
+    console.error('Failed to load images from cloud:', error);
+    return false;
+  }
+}
+
+// Init: Load from cloud on page start
+document.addEventListener('DOMContentLoaded', async () => {
+  await storageManager.init();
+
+  // Try to load images from cloud for main page
+  if (!checkAdminAccess()) {
+    const cloudLoaded = await loadImagesFromCloud();
+    if (cloudLoaded) {
+      // Re-init carousel with cloud images after entry is clicked
+      const originalReveal = revealMainContent;
+      window.revealMainContent = function () {
+        originalReveal();
+        setTimeout(init, 100);
+      };
+    }
+  }
+});
