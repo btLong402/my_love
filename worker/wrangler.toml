@@ -4,7 +4,7 @@ compatibility_date = "2024-01-01"
 
 # R2 Bucket Binding
 [[r2_buckets]]
-binding = "my-love-images"
+binding = "MY_BUCKET"
 bucket_name = "my-love-images"
 
 # CORS configuration for frontend access
